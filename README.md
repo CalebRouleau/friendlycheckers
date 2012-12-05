@@ -1,4 +1,4 @@
 friendlycheckers
 ================
 
-Windows Mobile Checkers with Networking Support
+Windows Mobile Checkers version without networking. 
