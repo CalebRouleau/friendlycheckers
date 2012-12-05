@@ -32,16 +32,14 @@ namespace FriendlyCheckers
         private static Boolean FORCE_JUMP = false, ROTATE = false, DIFFICULT = false;
         private static GameLogic logic;
         private static DataHandler dataDude;
-        private static NetworkLogic netLogic;
         private static BoardSpace[,] spaces;
         private static Checker[,] pieces;
-        private List<SaveDataBox> saveButtons;
 
         private static Boolean rotated = false;
         private static Boolean wait_for_timer = false, wait_for_computer = false, used_make_move = false;
         private static int row_W = 8;
         private static DispatcherTimer TURN_TIMER, COMPUTER_DELAY;
-        public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, CREDS, SAVE_GAME, SINGLE_PLAYER, ONLINE_MULTI, LOCAL_MULTI };
+        public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, CREDS, SAVE_GAME, SINGLE_PLAYER, LOCAL_MULTI };
         public static GameState game_state = GameState.OUT_OF_GAME;
 
         public MainPage()
@@ -50,16 +48,9 @@ namespace FriendlyCheckers
             InitializeColors();
             LayoutRoot.Children.Remove(OptionsPanel);
             LayoutRoot.Children.Remove(AboutPanel);
-            LayoutRoot.Children.Remove(CredPanel);
-            LayoutRoot.Children.Remove(SaveGamePanel);
-            ContentPanel.Children.Remove(back_to_saves);
             checkerX = checkerY = -1;
 
-            netLogic = new NetworkLogic();
             dataDude = new DataHandler();
-            ResetCredsPanel();
-            if(netLogic.getInternetState())
-                netLogic.getSaveData(dataDude.getUserName());
 
             Color shade = new Color();
             shade.R = shade.G = shade.B = 0;
@@ -74,7 +65,6 @@ namespace FriendlyCheckers
             TURN_TIMER.Tick += timerTick;              // Everytime timer ticks, timer_Tick will be called
             TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 800);  // Timer will tick in 800 milliseconds. This is the wait between moves.
             Op_DiffEasy.IsChecked = true;
-            EnterGame.IsEnabled = false;
 
             RemoveInGameStats();
             mainCanvas = new Canvas();
@@ -168,7 +158,6 @@ namespace FriendlyCheckers
         {
             ContentPanel.Children.Remove(singleplayer);
             ContentPanel.Children.Remove(multiplayer_local);
-            ContentPanel.Children.Remove(multiplayer_online);
             ContentPanel.Children.Remove(options);
             ContentPanel.Children.Remove(about);
         }
@@ -221,102 +210,15 @@ namespace FriendlyCheckers
         {
             return (game_state == GameState.CREDS || game_state == GameState.ABOUT || game_state == GameState.OPTIONS || game_state == GameState.SAVE_GAME);
         }
-        private void Online_Multi_Setup(object sender, RoutedEventArgs e)
-        {
-            if (game_state == GameState.SAVE_GAME)
-            {
-                LayoutRoot.Children.Remove(SaveGamePanel);
-                ContentPanel.Children.Remove(quit);
-                ContentPanel.Children.Add(back_to_saves);
-                ContentPanel.Children.Add(mainCanvas);
-            }
-            game_state = GameState.ONLINE_MULTI;
-            TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 0);
-            ClearMenu();
-            LayoutRoot.Children.Remove(TitlePanel);
-           // Versus.Text = "Player 1 vs. [Searching...]";
-            AddInGameStats();
-            ContentPanel.Children.Remove(quit);
-            ContentPanel.Children.Remove(Make_A_Move);
-            //resetBoard();
-            //ContentPanel.Children.Add(Shader);
-            //ContentPanel.Children.Add(Search);
-        }
-        private void SaveGame_Setup(object sender, RoutedEventArgs e)
-        {
-            if (!netLogic.getInternetState())
-            {
-                MessageBox.Show("You need to turn on data or connect to wifi to use that feature.");
-                return;
-            }
-            game_state = GameState.SAVE_GAME;
-            PageTitle.Text = "Active Games";
-            RemoveInGameStats();
-            ClearMenu();
-            if(!LayoutRoot.Children.Contains(TitlePanel))
-                LayoutRoot.Children.Add(TitlePanel);
-            ContentPanel.Children.Remove(mainCanvas);
-            ContentPanel.Children.Remove(back_to_saves);
-            ContentPanel.Children.Add(quit);
-            if (!dataDude.hasCreds())
-            {
-                Show_Creds(sender, e);
-                return;
-            }
-            else
-            {
-                LayoutRoot.Children.Add(SaveGamePanel);
-                saveButtons = new List<SaveDataBox>();
-                List<SaveData> saveData = netLogic.getGetSaveData(); 
-                if (saveData == null) return;
-
-                //Clear old savedata
-                for(int k=SaveGamePanel.Children.Count-1; k>=0; k--)
-                    SaveGamePanel.Children.RemoveAt(k);
-                SaveGamePanel.Children.Add(NewGame);
-                SaveGamePanel.Children.Add(EnterGame);
-                SaveGamePanel.Children.Add(Refresh);
-                SaveGamePanel.Children.Add(FindPlayer);
-                //
-
-                int ind = 0;
-                foreach (SaveData sd in saveData) // add enabled boxes
-                {
-                    if (!sd.getPlayerColor().Equals(sd.getWhoseTurn())) continue;
-
-                    SaveDataBox sdbox = new SaveDataBox(ind, sd);
-                    saveButtons.Add(sdbox);
-                    sdbox.getButton().Click += SaveDataBoxClick;
-                    SaveGamePanel.Children.Add(sdbox.getButton());
-                    ind++;
-                }
-                foreach (SaveData sd in saveData)// then add disabled boxes.
-                {
-                    if (sd.getPlayerColor().Equals(sd.getWhoseTurn())) continue;
-
-                    SaveDataBox sdbox = new SaveDataBox(ind, sd);
-                    sdbox.setEnabled(false);
-                    saveButtons.Add(sdbox);
-                    sdbox.getButton().Click += SaveDataBoxClick;
-                    SaveGamePanel.Children.Add(sdbox.getButton());
-                    ind++;
-                }
-            }
-        }
         private void Menu_Setup(object sender, RoutedEventArgs e)
         {
             if (InLocalGame() && MessageBox.Show("The current game will end.", "Exit to main menu?", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)return;
-            if (game_state == GameState.ONLINE_MULTI && netLogic.getInternetState())
-                netLogic.getSaveData(dataDude.getUserName());
             RemoveInGameStats();
-            clearCredStats();
             if (MenuState())
             {
                 ContentPanel.Children.Add(mainCanvas);
                 LayoutRoot.Children.Remove(OptionsPanel);
                 LayoutRoot.Children.Remove(AboutPanel);
-                LayoutRoot.Children.Remove(CredPanel);
-                LayoutRoot.Children.Remove(SaveGamePanel);
                 quit.Content = "Quit to Menu";
             }
             else
@@ -324,15 +226,10 @@ namespace FriendlyCheckers
             PageTitle.Text = "Checkers";
             Versus.Text = "Player 1 vs. Player 2";
 
-            ///// restore Login stuff
-            ResetCredsPanel();
-            ContentPanel.Children.Remove(back_to_saves);
-            /////
 
             ///// restore main menu
             ContentPanel.Children.Add(singleplayer);
             ContentPanel.Children.Add(multiplayer_local);
-            ContentPanel.Children.Add(multiplayer_online);
             ContentPanel.Children.Add(options);
             ContentPanel.Children.Add(about);
             /////
@@ -340,7 +237,6 @@ namespace FriendlyCheckers
             game_state = GameState.OUT_OF_GAME;
 
             ///// reset game vars
-            EnterGame.IsEnabled = false;
             wait_for_computer = false;
             wait_for_timer = false;
             rotated = false;
@@ -348,18 +244,6 @@ namespace FriendlyCheckers
             resetBoard();
             rotateBoard90();
             /////
-        }
-        private void LoginSuccess(bool success)
-        {
-            LoginConfirm.Foreground = new SolidColorBrush(success ? Valid : Invalid);
-            LoginConfirm.BorderBrush = new SolidColorBrush(success ? Valid : Invalid);
-            LoginConfirm.Content = success ? "Success" : "Failed";
-        }
-        private void CheckUserValidity(bool valid)
-        {
-            AvailableRect.Foreground = new SolidColorBrush(valid ? Valid : Invalid);
-            AvailableRect.BorderBrush = new SolidColorBrush(valid ? Valid : Invalid);
-            AvailableRect.Content = valid ? "Available" : "Unavailable";
         }
         private void Show_Options(object sender, RoutedEventArgs e)
         {
@@ -370,27 +254,6 @@ namespace FriendlyCheckers
             LayoutRoot.Children.Add(OptionsPanel);
             ContentPanel.Children.Remove(mainCanvas);
             ContentPanel.Children.Add(quit);
-        }
-        private void Show_Creds(object sender, RoutedEventArgs e)
-        {
-            if (!netLogic.getInternetState())
-            {
-                MessageBox.Show("You need to turn on data or connect to wifi to use that feature.");
-                return;
-            }
-            game_state = GameState.CREDS;
-            quit.Content = "Save and Quit to Menu";
-            PageTitle.Text = "Credentials";
-            LayoutRoot.Children.Remove(OptionsPanel);
-            LayoutRoot.Children.Add(CredPanel);
-            if (!CredPanel.Children.Contains(NewUser))
-                CredPanel.Children.Add(NewUser);
-            FocusLost(sender, e);
-        }
-        private void NewGame_Setup(object sender, RoutedEventArgs e)
-        {
-            /// other stuff will be done, then the game will be displayed.
-            Online_Multi_Setup(sender, e);
         }
         private void Show_About(object sender, RoutedEventArgs e)
         {
@@ -451,104 +314,10 @@ namespace FriendlyCheckers
         {
             return game_state;
         }
-        private void ResetCredsPanel()
-        {
-            CredPanel.Children.Remove(ChangeUser);
-            CredPanel.Children.Remove(NewUser);
-            CredPanel.Children.Remove(CheckAvailability);
-            CredPanel.Children.Remove(AvailableRect);
-            clearCredStats();
-            Login.Content = "Login";
-            UserName.Text = "";
-            Password.Password = "";
-
-            if (dataDude.hasCreds())
-            {
-                UserName.Text = dataDude.getUserName();
-                Password.Password = dataDude.getPassword();
-
-                UserName.IsEnabled = false;
-                Password.IsEnabled = false;
-                Login.IsEnabled = false;
-                ChangeUser.IsEnabled = true;
-
-                LoginSuccess(true);
-                CredPanel.Children.Add(ChangeUser);
-                CredPanel.Children.Add(NewUser);
-            }
-            else
-            {
-                CheckAvailability.IsEnabled = true;
-                UserName.IsEnabled = true;
-                Password.IsEnabled = true;
-                Login.IsEnabled = true;
-                Login.Content = "Create Account";
-                ChangeUser.IsEnabled = false;
-                CredPanel.Children.Add(CheckAvailability);
-                CredPanel.Children.Add(AvailableRect);
-            }
-        }
-        private void postGameStateToServer()
-        {
-            SaveData old = dataDude.getCurrentSaveData();
-            SaveData sd = new SaveData(old.getMatchID(), old.getOpponent(), logic.getMoveNumber(), old.getPlayerColor(), logic.whoseMove());
-            GameData gd = new GameData(logic.getMoveAttemptsMade(), logic.whoseMove());
-            netLogic.writeToServer(dataDude.getUserName(), sd, gd);
-
-            dataDude.setSaveData(sd);
-        }
         
         //////////
         //// HANDLERS FOR BOARD, PIECES, LOGIC AND HIGHLIGHTING LOCATED BELOW HERE
         //////////
-        private void SaveDataBoxClick(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("SaveDataBoxClick("+sender.ToString()+","+ e.ToString()+")");
-            foreach (SaveDataBox box in saveButtons)
-            {
-                if (box.getButton().Equals(sender))
-                {
-                    System.Diagnostics.Debug.WriteLine("A save data box was clicked!");
-                    SaveData data = box.getSaveData();
-                    netLogic.getGameData(dataDude.getUserName(), data.getMatchID());
-                    EnterGame.IsEnabled = !box.isHighlighted();
-                    HighlightBox(box, true);
-                }
-                else
-                    HighlightBox(box, false);
-            }
-        }
-        public void LoadSaveGame(SaveData data)
-        {
-            System.Diagnostics.Debug.WriteLine("LoadSaveGame(" + data.ToString() + ")------------------");
-            GameData gameData = netLogic.getGameDataReal();
-            System.Diagnostics.Debug.WriteLine("Is there game data? " + (gameData != null));
-
-            if (gameData == null) return;
-            dataDude.setSaveData(data);
-            resetBoard();
-
-            System.Diagnostics.Debug.WriteLine("Whose turn is it in GameLogic? " + logic.whoseMove());
-            System.Diagnostics.Debug.WriteLine("Whose turn is it in GameData? " + gameData.getWhoseMove());
-            System.Diagnostics.Debug.WriteLine("How many moves? " + data.getNumMoves());
-            foreach (MoveAttempt move in gameData.getMoves())
-            {
-                Move m = logic.makeMove(move);
-                handleMove(m);
-            }
-
-            Versus.Text = dataDude.getUserName() + " vs. " + data.getOpponent();
-            Moves.Text = "Moves: " + data.getNumMoves();
-            if (data.getWhoseTurn().Equals(PieceColor.RED))
-            {
-                rotateBoard180();
-                WhoseTurn.Text = "Red to move next.";
-            }
-            else
-                WhoseTurn.Text = "Black to move next.";
-
-            System.Diagnostics.Debug.WriteLine("-----------------------------------------");
-        }
         public static void MakeMove(int boardX, int boardY)
         {
             if (wait_for_timer || wait_for_computer || !canMove()) return;
@@ -576,8 +345,7 @@ namespace FriendlyCheckers
         }
         private static bool canMove()
         {
-            return  !(game_state == GameState.END_GAME || (game_state == GameState.ONLINE_MULTI &&
-                !dataDude.getCurrentSaveData().getWhoseTurn().Equals(dataDude.getCurrentSaveData().getPlayerColor())));
+            return  !(game_state == GameState.END_GAME);
         }
         private Boolean checkEndGame()
         {
@@ -668,8 +436,6 @@ namespace FriendlyCheckers
                 else
                     wait_for_computer = false;
             }
-            if(game_state == GameState.ONLINE_MULTI)
-                postGameStateToServer();
         }
         private void Computer_Delay_Tick(object o, EventArgs e)
         {
@@ -754,134 +520,10 @@ namespace FriendlyCheckers
             else
                 TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 800); 
         }
-        private void Process_Username(object sender, EventArgs e)
-        {
-            netLogic.checkUser(UserName.Text);
-            Boolean valid = !netLogic.getCheckUserState();
-            if (UserName.Text.Equals(""))
-                valid = false;
-            CheckUserValidity(valid);
-        }
-        private void Login_Confirm(object sender, EventArgs e)
-        {
-            bool create = Login.Content.Equals("Create Account");
-            if (create)
-                netLogic.createUser(UserName.Text, Password.Password);
-            else
-                netLogic.login(UserName.Text, Password.Password);
 
-            Boolean success = create ? !netLogic.getCreateUserState(): netLogic.getGetLoginState();
-            if (UserName.Text.Equals("") || Password.Password.Equals("")) 
-                success = false;
-            LoginSuccess(success);
-
-            if (success)
-            {
-                dataDude.setCreds(UserName.Text, Password.Password);
-                ResetCredsPanel();
-            }
-            else
-            {
-                dataDude.setCreds("", "");
-            }
-        }
-        private void FocusLost(object sender, EventArgs e)
-        {
-            netLogic.checkUser(UserName.Text);
-            netLogic.login(UserName.Text, Password.Password);
-            if(Login.Content.Equals("Create Account"))
-                netLogic.createUser(UserName.Text, Password.Password);
-            CheckAvailability.IsEnabled = true;
-            AvailableRect.IsEnabled = true;
-        }
-        private void FocusGained(object sender, EventArgs e)
-        {
-            CheckAvailability.IsEnabled = false;
-            AvailableRect.IsEnabled = true;
-            clearCredStats();
-        }
-        private void Create_User(object o, EventArgs e)
-        {
-            UserName.Text = Password.Password = "";
-            netLogic.createUser(UserName.Text, Password.Password);
-            Login.Content = "Create Account";
-            UserName.IsEnabled = true;
-            Password.IsEnabled = true;
-            Login.IsEnabled = true;
-            CredPanel.Children.Add(CheckAvailability);
-            CredPanel.Children.Add(AvailableRect);
-            CredPanel.Children.Remove(NewUser);
-            CredPanel.Children.Remove(ChangeUser);
-            clearCredStats();
-        }
-        private void Change_User(object o, EventArgs e)
-        {
-            netLogic.login(UserName.Text, Password.Password);
-            clearCredStats();
-            UserName.IsEnabled = true;
-            Password.IsEnabled = true;
-            Login.IsEnabled = true;
-            ChangeUser.IsEnabled = false;
-        }
-        private void clearCredStats()
-        {
-            LoginConfirm.Foreground = LoginConfirm.BorderBrush = new SolidColorBrush(Colors.White);
-            LoginConfirm.Content = AvailableRect.Content = "";
-            AvailableRect.Foreground = AvailableRect.BorderBrush = new SolidColorBrush(Colors.White);
-        }
-        private void EnterGame_Click(object o, RoutedEventArgs e)
-        {
-            foreach (SaveDataBox box in saveButtons)
-            {
-                if (!box.isHighlighted()) continue;
-                LoadSaveGame(box.getSaveData());
-                Online_Multi_Setup(o, e);
-                ContentPanel.Children.Remove(quit);
-                HighlightBox(box, false);
-                break;
-            }
-        }
-        private void Find_Player_Setup(object o, RoutedEventArgs e)
-        {
-        }
         private void Refresh_Data(object o, RoutedEventArgs e)
         {
         }
-        private void HighlightBox(SaveDataBox box, bool b)
-        {
-            if (box.isHighlighted())
-                box.Highlight(b=false);
-            else
-                box.Highlight(b);
-            if (!box.getButton().IsEnabled) return;
-
-            Color color = b ? Valid : Colors.White;
-            box.getButton().BorderBrush = new SolidColorBrush(color);
-            box.getButton().Foreground = new SolidColorBrush(color);
-        }
-    }
-    public class SaveDataBox
-    {
-        private SaveData data;
-        private Button button;
-        private bool highlighted;
-        public SaveDataBox(int index, SaveData data) 
-        { 
-            this.data = data;
-            this.highlighted = false;
-            button = new Button();
-            button.Content = "Moves: "+data.getNumMoves()+"          "+data.getOpponent()+"          ";
-            button.HorizontalContentAlignment = HorizontalAlignment.Right;
-            button.FontSize = 30;
-            button.Height = 80;
-            button.Width = 450;
-            button.Margin = new Thickness(0, -500 + 120 * index, 0, 0);
-        }
-        public void Highlight(bool b){ highlighted = b; }
-        public bool isHighlighted() { return highlighted; }
-        public Button getButton() { return button; }
-        public SaveData getSaveData() { return data; }
-        public void setEnabled(bool b){ button.IsEnabled = b; }
     }
     public class BoardSpace
     {

@@ -38,21 +38,13 @@
         <Grid x:Name="ContentPanel" Margin="12,109,12,0" Grid.RowSpan="2">
             <TextBlock x:Name="WhoseTurn" Text="Black to move next." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="56" Margin="50,436,30,97" HorizontalAlignment="Right" Width="325" />
             <Button Name="quit"  Click="Menu_Setup" Margin="-12,556,-12,6" Height="70">Quit to Menu</Button>
-            <Button Name="back_to_saves"  Click="SaveGame_Setup" Margin="-12,556,-12,6" Height="70">Back to Games</Button>
             <Button Name="Make_A_Move"  Click="Make_Educated_Move" Margin="-12,446,-12,6" Height="70">Make Next Move</Button>
             <Button Name="singleplayer"  Click="SinglePlayer_Setup" Margin="-12,444,92,113" Height="70">Singleplayer</Button>
             <Button Name="multiplayer_local" Click="Local_Multi_Setup" Margin="-12,500,92,59" Height="70">Multiplayer Local</Button>
-            <Button Name="multiplayer_online" Click="SaveGame_Setup" Margin="-12,556,92,6" Height="70">Multiplayer Online</Button>
             <Button Name="options"  Click="Show_Options" Margin="351,460,8,74" FontSize ="40" Height="125">+</Button>
             <Button Name="about"  Click="Show_About" Margin="351,570,8,19" FontSize ="26" Height="70">?</Button>
             <Rectangle x:Name="Shader" Height="452" Width="440" Margin="6,9,6,198"></Rectangle>
             <TextBlock x:Name="Search" Text="Searching for Opponents..." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="56" Margin="0,206,29,397" HorizontalAlignment="Right" Width="376" />
-        </Grid>
-        <Grid Name ="SaveGamePanel" Margin="0,139,0,74" Grid.RowSpan="2">
-            <Button Name="NewGame" Click="NewGame_Setup" Height="75" Width ="250" FontSize="25" Margin="-230,478,0,16">Find Random</Button>
-            <Button Name="EnterGame" Click="EnterGame_Click" Height="75" Width ="250" FontSize="25" Margin="-230,378,0,16">Enter Game</Button>
-            <Button Name="FindPlayer" Click="Find_Player_Setup" Height="75" Width ="250" FontSize="25" Margin="230,478,0,16">Find Player</Button>
-            <Button Name="Refresh" Click="Refresh_Data" Height="75" Width ="250" FontSize="25" Margin="230,378,0,16">Refresh</Button>
         </Grid>
         <StackPanel Name ="OptionsPanel" Margin="0,139,0,74" Grid.RowSpan="2">
             <TextBlock x:Name="GameOptions" Text="Gameplay:" FontSize="28" Margin ="-10,20,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
@@ -61,7 +53,6 @@
             <TextBlock x:Name="Difficulty" Text="Computer player difficulty:" FontSize="28" Margin ="-10,20,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
             <CheckBox Name="Op_DiffHard" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="482" Margin="10,-5,-10,0">Expert</CheckBox>
             <CheckBox Name="Op_DiffEasy" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="486" Margin="10,-15,-10,0">Novice</CheckBox>
-            <Button Name="CredChange"  Click="Show_Creds" Margin ="0,100,0,0" FontSize ="26" Height="75">Change Credentials</Button>
         </StackPanel>
         <StackPanel Name ="AboutPanel" Margin="0,139,0,74" Grid.RowSpan="2">
             <TextBlock x:Name="GameInfo" TextWrapping="Wrap" Text="FriendlyCheckers was the joint effort of four people working on four components of the game:" FontSize="24" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="157" Width="447" />
@@ -74,17 +65,5 @@
             <TextBlock x:Name="AndrewInfo" TextWrapping="Wrap" Text="Database storage and retrieval" FontSize="20" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="30" Width="442" />
             <TextBlock x:Name="AndrewName" Text="Andrew Cutler" FontSize ="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="36" Width="440" />
         </StackPanel>
-        <Grid Name ="CredPanel" Margin="0,139,0,74" Grid.RowSpan="2">
-            <TextBlock x:Name="UserNameTitle" Text="Username" FontSize="28" Margin ="0,28,5,488" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
-            <TextBox Name="UserName" Width ="450" GotFocus="FocusGained" LostFocus="FocusLost" Margin="9,57,21,426" Height="72"></TextBox>
-            <Button Name="CheckAvailability" Click="Process_Username" Margin ="7,123,193,357" FontSize ="26" Height="75">Check Availability</Button>
-            <Button Name="AvailableRect" Height="75" Margin="272,123,24,358"></Button>
-            <TextBlock x:Name="PasswordTitle" Text="Password" FontSize="28" Margin ="0,209,12,306" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
-            <PasswordBox Name="Password" Width ="450" LostFocus="FocusLost" Margin="6,239,24,247" Height="69"></PasswordBox>
-            <Button FontSize="26" Click="Login_Confirm" Height="75" Margin="6,314,194,166" Name="Login">Login</Button>
-            <Button Height="75" Margin="275,314,21,166" Name="LoginConfirm" />
-            <Button Name="ChangeUser"  Click="Change_User" Margin="0,486,0,6" Height="70">Change User</Button>
-            <Button Name="NewUser"  Click="Create_User" Margin="0,386,0,6" Height="70">Create User</Button>
-        </Grid>
     </Grid>
 </phone:PhoneApplicationPage>
