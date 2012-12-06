@@ -35,14 +35,14 @@
             <TextBlock x:Name="Moves" Text="Moves: 0" FontSize ="22" Style="{StaticResource PhoneTextNormalStyle}" Height="33" Margin="0,36,275,92" HorizontalAlignment="Right" Width="191" Grid.ColumnSpan="2" />
         </Grid>
         <!--ContentPanel - place additional content here-->
-        <Grid x:Name="ContentPanel" Margin="12,109,12,0" Grid.RowSpan="2">
+        <Grid x:Name="ContentPanel" Margin="0,109,2,0" Grid.RowSpan="2">
             <TextBlock x:Name="WhoseTurn" Text="Black to move next." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="56" Margin="50,436,30,97" HorizontalAlignment="Right" Width="325" />
             <Button Name="quit"  Click="Menu_Setup" Margin="-12,556,-12,6" Height="70">Quit to Menu</Button>
             <Button Name="Make_A_Move"  Click="Make_Educated_Move" Margin="-12,446,-12,6" Height="70">Make Next Move</Button>
-            <Button Name="singleplayer"  Click="SinglePlayer_Setup" Margin="-12,444,92,113" Height="70">Singleplayer</Button>
-            <Button Name="multiplayer_local" Click="Local_Multi_Setup" Margin="-12,500,92,59" Height="70">Multiplayer Local</Button>
-            <Button Name="options"  Click="Show_Options" Margin="351,460,8,74" FontSize ="40" Height="125">+</Button>
-            <Button Name="about"  Click="Show_About" Margin="351,570,8,19" FontSize ="26" Height="70">?</Button>
+            <Button Name="singleplayer"  Click="SinglePlayer_Setup" Margin="-12,460,111,98" Height="90">Singleplayer</Button>
+            <Button Name="multiplayer_local" Click="Local_Multi_Setup" Margin="-12,551,111,19" Height="90">Multiplayer Local</Button>
+            <Button Name="options"  Click="Show_Options" Margin="359,466,0,103" FontSize ="40" Height="90">+</Button>
+            <Button Name="about"  Click="Show_About" Margin="359,551,0,18" FontSize ="26" Height="90">?</Button>
             <Rectangle x:Name="Shader" Height="452" Width="440" Margin="6,9,6,198"></Rectangle>
             <TextBlock x:Name="Search" Text="Searching for Opponents..." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="56" Margin="0,206,29,397" HorizontalAlignment="Right" Width="376" />
         </Grid>
