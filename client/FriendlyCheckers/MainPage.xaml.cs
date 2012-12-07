@@ -23,19 +23,17 @@ namespace FriendlyCheckers
         private static Color Invalid;
 
         private static int checkerX, checkerY;
+        public static int computerDelay = 400; 
         public static int w = 400, h = 400;
         private static Canvas mainCanvas;
-        private static Boolean FORCE_JUMP = false, ROTATE = false, DIFFICULT = false;
+        private static Boolean FORCE_JUMP = false, DIFFICULT = false;
         private static GameLogic logic;
-        private static DataHandler dataDude;
         private static BoardSpace[,] spaces;
-        private static Checker[,] pieces;
 
-        private static Boolean rotated = false;
         private static Boolean wait_for_timer = false, wait_for_computer = false, used_make_move = false;
         private static int row_W = 8;
         private static DispatcherTimer TURN_TIMER, COMPUTER_DELAY;
-        public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, CREDS, SAVE_GAME, SINGLE_PLAYER, LOCAL_MULTI };
+        public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, CREDS, SINGLE_PLAYER, LOCAL_MULTI };
         public static GameState game_state = GameState.OUT_OF_GAME;
 
         public MainPage()
@@ -46,30 +44,21 @@ namespace FriendlyCheckers
             LayoutRoot.Children.Remove(AboutPanel);
             checkerX = checkerY = -1;
 
-            dataDude = new DataHandler();
-
-            Color shade = new Color();
-            shade.R = shade.G = shade.B = 0;
-            shade.A = 150;
-            Shader.Fill = new SolidColorBrush(shade);
-
             COMPUTER_DELAY = new DispatcherTimer();
             COMPUTER_DELAY.Tick += Computer_Delay_Tick;
-            COMPUTER_DELAY.Interval = new TimeSpan(0, 0, 0, 0, 400);
+            COMPUTER_DELAY.Interval = new TimeSpan(0, 0, 0, 0, computerDelay);
 
             TURN_TIMER = new DispatcherTimer();
             TURN_TIMER.Tick += timerTick;              // Everytime timer ticks, timer_Tick will be called
             TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 800);  // Timer will tick in 800 milliseconds. This is the wait between moves.
             Op_DiffEasy.IsChecked = true;
 
-            RemoveInGameStats();
             mainCanvas = new Canvas();
             mainCanvas.Width = w;
             mainCanvas.Height = h;
-            ContentPanel.Children.Add(mainCanvas);
+            RemoveInGameStats();
             createBoard();
             createPieces();
-            rotateBoard90();
         }
         private void InitializeColors()
         {
@@ -121,31 +110,32 @@ namespace FriendlyCheckers
         private void createPieces()
         {
             logic = new GameLogic(row_W, row_W, FORCE_JUMP);
-            pieces = new Checker[8,8];
+            //pieces = new Checker[8,8];
             int row = 0, col = 0;
             for (int k = 0; k < 24; k++)
             {
                 row = (k / 4) + ((k>=12)? 2 : 0);
                 col = 2*(k % 4) + (row%2==0?0:1);
-                pieces[col,row] = new Checker(col, row, (k < 12) ? Colors.Red : DarkGrey,
+                Checker c = new Checker(col, row, (k < 12) ? Colors.Red : DarkGrey,
                                                 (k < 12) ? DarkRed : Colors.Black);
                 Vector vect = new Vector(row, col);
                 Piece piece = new Piece((k < 12) ? PieceColor.RED: PieceColor.BLACK,vect,PieceType.REGULAR);
                 logic.addPiece(piece);
-                mainCanvas.Children.Add(pieces[col, row].getEl2());
-                mainCanvas.Children.Add(pieces[col, row].getEl1());
-                mainCanvas.Children.Add(pieces[col, row].getCrown());
+                spaces[col, row].setChecker(c);
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getEl2());
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getEl1());
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getCrown());
             }
         }
         private void createBoard()
         {
             spaces = new BoardSpace[row_W, row_W];
-            int size = 55;
+            int size = 60;
             for (int k = 0; k < row_W; k++)
             {
                 for (int i = 0; i < row_W; i++)
                 {
-                    spaces[k, i] = new BoardSpace(k, i, size, ((i + k) % 2 == 0) ? Sand : Brown);
+                    spaces[k, i] = new BoardSpace(k, i, size, ((i + k) % 2 == 0) ? Sand : Brown, null);
                     mainCanvas.Children.Add(spaces[k, i].getRect());
                 }
             }
@@ -156,6 +146,7 @@ namespace FriendlyCheckers
             ContentPanel.Children.Remove(multiplayer_local);
             ContentPanel.Children.Remove(options);
             ContentPanel.Children.Remove(about);
+            ContentPanel.Children.Remove(TitleBoard);
         }
         private void RemoveInGameStats()
         {
@@ -163,8 +154,7 @@ namespace FriendlyCheckers
             ContentPanel.Children.Remove(quit);
             ContentPanel.Children.Remove(Make_A_Move);
             ContentPanel.Children.Remove(WhoseTurn);
-            ContentPanel.Children.Remove(Shader);
-            ContentPanel.Children.Remove(Search);
+            ContentPanel.Children.Remove(mainCanvas);
         }
         private void AddInGameStats()
         {
@@ -172,6 +162,7 @@ namespace FriendlyCheckers
             ContentPanel.Children.Add(quit);
             ContentPanel.Children.Add(Make_A_Move);
             ContentPanel.Children.Add(WhoseTurn);
+            ContentPanel.Children.Add(mainCanvas);
         }
         private void SinglePlayer_Setup(object sender, RoutedEventArgs e)
         {
@@ -186,15 +177,11 @@ namespace FriendlyCheckers
         private void Local_Multi_Setup(object sender, RoutedEventArgs e)
         {
             game_state = GameState.LOCAL_MULTI;
-            if(ROTATE)
-                TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 800); 
-            else
-                TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 0); 
+            TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 0); 
             ClearMenu();
             LayoutRoot.Children.Remove(TitlePanel);
             Versus.Text = "Player 1 vs. Player 2";
             AddInGameStats();
-            LayoutRoot.Children.Add(TitlePanel);
             ContentPanel.Children.Remove(Make_A_Move);
             resetBoard();
         }
@@ -204,7 +191,7 @@ namespace FriendlyCheckers
         }
         private Boolean MenuState()
         {
-            return (game_state == GameState.CREDS || game_state == GameState.ABOUT || game_state == GameState.OPTIONS || game_state == GameState.SAVE_GAME);
+            return (game_state == GameState.CREDS || game_state == GameState.ABOUT || game_state == GameState.OPTIONS);
         }
         private void Menu_Setup(object sender, RoutedEventArgs e)
         {
@@ -212,7 +199,6 @@ namespace FriendlyCheckers
             RemoveInGameStats();
             if (MenuState())
             {
-                ContentPanel.Children.Add(mainCanvas);
                 LayoutRoot.Children.Remove(OptionsPanel);
                 LayoutRoot.Children.Remove(AboutPanel);
                 quit.Content = "Quit to Menu";
@@ -231,14 +217,12 @@ namespace FriendlyCheckers
             /////
 
             game_state = GameState.OUT_OF_GAME;
-
+            ContentPanel.Children.Add(TitleBoard);
             ///// reset game vars
             wait_for_computer = false;
             wait_for_timer = false;
-            rotated = false;
             checkerX = checkerY = -1;
             resetBoard();
-            rotateBoard90();
             /////
         }
         private void Show_Options(object sender, RoutedEventArgs e)
@@ -266,45 +250,13 @@ namespace FriendlyCheckers
             {
                 for (int j = 0; j < row_W; j++)
                 {
-                    if (pieces[k, j] == null) continue;
+                    if (spaces[k, j].getChecker() == null) continue;
                     delete(k, j);
                 }
             }
             createPieces(); //makes new GameLogic instance
             Moves.Text = "Moves: 0";
             WhoseTurn.Text = "Black to move next.";
-            rotated = false;
-        }
-        private static void rotateBoard180()
-        {
-            for (int k = 0; k < row_W; k++)
-            {
-                for (int i = 0; i < row_W; i++)
-                {
-                    if (pieces[i, k] == null) continue;
-                    Checker c = pieces[i, k];
-                    if (!rotated)
-                        c.rotate(row_W - c.getY() - 1, row_W - c.getX() - 1);
-                    else
-                        c.rotate(c.getY(), c.getX());
-                }
-            }
-            rotated = !rotated;
-        }
-        private static void rotateBoard90()
-        {
-            for (int k = 0; k < row_W; k++)
-            {
-                for (int i = 0; i < row_W; i++)
-                {
-                    if (pieces[i, k] == null) continue;
-                    Checker c = pieces[i, k];
-                    if (!rotated)
-                        c.rotate(c.getX(), c.getY());
-                    else
-                        c.rotate(c.getY(), c.getX());
-                }
-            }
         }
         public GameState getGameType()
         {
@@ -326,7 +278,7 @@ namespace FriendlyCheckers
                 int locY = checkerY;
                 // Unhighlight the selected piece
                 handleHighlighting(checkerX, checkerY);
-                m = logic.makeMove(locY, locX, (!rotated ? boardY : (row_W - boardY - 1)), (!rotated ? boardX : (row_W - boardX - 1)));
+                m = logic.makeMove(locY, locX, boardY, boardX);
                 handleMove(m);
 
                 TURN_TIMER.Start();
@@ -421,9 +373,7 @@ namespace FriendlyCheckers
             WhoseTurn.Text = (logic.whoseMove().Equals(PieceColor.RED) ? "Red" : "Black") + " to move next.";
             Moves.Text = "Moves: "+logic.getMoveNumber();
             wait_for_timer = false;
-            if (ROTATE && game_state == GameState.LOCAL_MULTI)
-                rotateBoard180();
-            else if (game_state == GameState.SINGLE_PLAYER)
+            if (game_state == GameState.SINGLE_PLAYER)
             {
                 //MessageBox.Show("Computer's turn.");
                 wait_for_computer = !wait_for_computer;
@@ -457,24 +407,22 @@ namespace FriendlyCheckers
                 int row = co.getY();
                 Checker c = new Checker(col, row,p.getColor() == PieceColor.BLACK ? DarkGrey : Colors.Red,
                                                  p.getColor() == PieceColor.BLACK ? Colors.Black : DarkRed);
-                pieces[col, row] = c;
-                mainCanvas.Children.Add(pieces[col, row].getEl2());
-                mainCanvas.Children.Add(pieces[col, row].getEl1());
-                mainCanvas.Children.Add(pieces[col, row].getCrown());
+                spaces[col, row].setChecker(c);
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getEl2());
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getEl1());
+                mainCanvas.Children.Add(spaces[col, row].getChecker().getCrown());
 
                 if (p.getType() == PieceType.KING)
                     c.king();
-                if(rotated)
-                    c.rotate(row_W - c.getY() - 1, row_W - c.getX() - 1);
             }
         }
         private static Checker delete(int x, int y)
         {
-            Checker temp = pieces[x, y];
+            Checker temp = spaces[x, y].getChecker();
             mainCanvas.Children.Remove(temp.getEl2());
             mainCanvas.Children.Remove(temp.getEl1());
             mainCanvas.Children.Remove(temp.getCrown());
-            pieces[x, y] = null;
+            spaces[x, y].setChecker(null);
 
             return temp;
         }
@@ -483,12 +431,12 @@ namespace FriendlyCheckers
             if (wait_for_timer || wait_for_computer || game_state==GameState.END_GAME || !canMove()) return;
             if (!logic.isSelectable(y,x))return;
 
-            Checker HIGHLIGHTED_PIECE = pieces[x, y];
+            Checker HIGHLIGHTED_PIECE = spaces[x, y].getChecker();
             if (checkerX != -1 && checkerY != -1)
-                pieces[checkerX, checkerY].toggleHighlight();
+                spaces[checkerX, checkerY].getChecker().toggleHighlight();
 
             //if the already highlighted piece is the same as the one being clicked
-            if (checkerX!=-1 && checkerY!=-1 && HIGHLIGHTED_PIECE.Equals(pieces[checkerX,checkerY])) 
+            if (checkerX != -1 && checkerY != -1 && HIGHLIGHTED_PIECE.Equals(spaces[checkerX, checkerY].getChecker())) 
             {
                 checkerX = checkerY = -1;
                 return;
@@ -503,20 +451,13 @@ namespace FriendlyCheckers
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             FORCE_JUMP = (Op_ForceJump.IsChecked == true);
-            ROTATE = (Op_Rotate.IsChecked == true);
             if(sender.Equals(Op_DiffHard))
                 DIFFICULT = (Op_DiffHard.IsChecked == true);
             else
                 DIFFICULT = (Op_DiffEasy.IsChecked == false);
             Op_DiffHard.IsChecked = DIFFICULT;
             Op_DiffEasy.IsChecked = !DIFFICULT;
-
-            if (!ROTATE || game_state != GameState.LOCAL_MULTI)
-                TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 0); 
-            else
-                TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 800); 
         }
-
         private void Refresh_Data(object o, RoutedEventArgs e)
         {
         }
@@ -524,15 +465,17 @@ namespace FriendlyCheckers
     public class BoardSpace
     {
         private Rectangle space;
+        private Checker checker;
         private int gridx, gridy, size;
         private Color color;
 
-        public BoardSpace(int x, int y, int size, Color c)
+        public BoardSpace(int x, int y, int size, Color c, Checker checker)
         {
             this.gridx = x;
             this.gridy = y;
             this.color = c;
             this.size = size;
+            this.checker = checker;
 
             space = new Rectangle();
             space.Width = size;
@@ -541,10 +484,19 @@ namespace FriendlyCheckers
             space.MinHeight = size;
             space.MouseLeftButtonUp += Space_Action;
             space.Fill = new SolidColorBrush(color);
-            int lm = (x * size) - 20;
-            int tm = (y * size) - 115;
+            int lm = (x * size) - 40;
+            int tm = (y * size) - 150;
             space.Margin = new Thickness(lm, tm, MainPage.w - lm, MainPage.h - tm);
+            if(checker!=null)
+                this.checker.setMargin(space.Margin);
         }
+        public void setChecker(Checker c)
+        {
+            this.checker = c;
+            if (c == null) return;
+            checker.setMargin(space.Margin);
+        }
+        public Checker getChecker() { return checker; }
         public int getX(){return this.gridx;}
         public int getY(){return this.gridy;}
         public Rectangle getRect() { return space; }
@@ -563,7 +515,7 @@ namespace FriendlyCheckers
     {
         private Ellipse el1, el2;
         private Image crown;
-        private int offsetx = -111, offsety = 19, marginx = 55, marginy = 55, x, y;
+        private int width, x, y;
         private Color color, bg, high;
         private bool col, lit;
         public Checker(int x, int y, Color color, Color bg)
@@ -579,31 +531,34 @@ namespace FriendlyCheckers
 
             this.x = x;
             this.y = y;
+            this.width = 55;
             this.lit = false;
             this.color = color;
             this.col = (color.Equals(MainPage.DarkGrey) ? false : true);
             this.bg = bg;
             this.high = !col ? MainPage.HighlightGrey : MainPage.HighlightRed;
 
-            el1.Width = 50;
-            el1.MinWidth = 50;
-            el1.Height = 50;
-            el1.MinHeight = 50;
+            el1.Width = width;
+            el1.MinWidth = width;
+            el1.Height = width;
+            el1.MinHeight = width;
             el1.Fill = new SolidColorBrush(color);
-            el1.Margin = new Thickness(x * marginx - offsety, y * marginy - 2 + offsetx,
-                400 - x * marginx + offsety, 400 - y * marginy + 2 - offsetx);
-            crown.Margin = new Thickness(x * marginx - offsety - 2, y * marginy - 4 + offsetx,
-                400 - x * marginx + offsety+2, 400 - y * marginy + 4 - offsetx);
 
-            el2.Width = 50;
-            el2.MinWidth = 50;
-            el2.Height = 50;
-            el2.MinHeight = 50;
-            el2.Margin = new Thickness(x * marginx - offsety + 2, y * marginy + offsetx,
-                400 - x * marginx + offsety - 2, 400 - y * marginy - offsetx);
+            el2.Width = width;
+            el2.MinWidth = width;
+            el2.Height = width;
+            el2.MinHeight = width;
             el2.Fill = new SolidColorBrush(bg);
             el1.MouseLeftButtonUp += ellipse_MouseUp;
             el2.MouseLeftButtonUp += ellipse_MouseUp;
+        }
+        public void setMargin(Thickness t)
+        {
+            Thickness ct = new Thickness(t.Left + 2, t.Top + 2, t.Right - 2, t.Bottom - 2);
+            this.el1.Margin = ct;
+            this.crown.Margin = ct;
+            Thickness ct2 = new Thickness(t.Left + 4, t.Top + 4, t.Right - 4, t.Bottom - 4);
+            this.el2.Margin = ct2;
         }
         public Ellipse getEl1() { return el1; }
         public Ellipse getEl2() { return el2; }
@@ -617,15 +572,12 @@ namespace FriendlyCheckers
             crown.Visibility = Visibility.Visible;
         }
         public Boolean Equals(Checker c) { return (c.getX() == this.getX() && c.getY() == this.getY()); }
-        public void rotate(int y, int x)
+        /*&public void rotate(int y, int x)
         {
-            crown.Margin = new Thickness(x * marginx - offsety - 2, y * marginy - 4 + offsetx,
-               400 - x * marginx + offsety + 2, 400 - y * marginy + 4 - offsetx);
-            el1.Margin = new Thickness(x * marginx - offsety, y * marginy - 2 + offsetx,
-                400 - x * marginx + offsety, 400 - y * marginy + 2 - offsetx);
-            el2.Margin = new Thickness(x * marginx - offsety + 2, y * marginy + offsetx,
-                400 - x * marginx + offsety - 2, 400 - y * marginy - offsetx);
-        }
+            el1.Margin = new Thickness(x * width - 2, y * width - 2, 400 - x * width + 2, 400 - y * width + 2);
+            crown.Margin = new Thickness(x * width, y * width, 400 - x * width, 400 - y * width);
+            el2.Margin = new Thickness(x * width, y * width, 400 - x * width, 400 - y * width);
+        }*/
         public void toggleHighlight()
         {
             if (!lit)

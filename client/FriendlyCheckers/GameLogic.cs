@@ -277,7 +277,8 @@ namespace FriendlyCheckers {
         int redPieces = 0; 
         int turnNumber = 0; 
         List<Move> movesMade;
-        List<MoveAttempt> successMoves; 
+        List<MoveAttempt> successMoves;
+        PieceColor lastPlayer; 
 
         int lastAdvantage = 0; //the turnNumber of the last move that either
                                //made a king or took a piece.
@@ -301,7 +302,7 @@ namespace FriendlyCheckers {
                 throw new UnreachableCodeException(); 
             }
         }
-        public PieceColor getWhoMovedLast() { return movesMade[movesMade.Count - 1].getPlayer(); }
+        public PieceColor getWhoMovedLast() { return this.lastPlayer; }
         public static Vector[] getPossibleJumps(PieceColor color, PieceType type) {
             if (type == PieceType.KING) {
                 return kingJumps;
@@ -606,12 +607,17 @@ namespace FriendlyCheckers {
         }
 
         public MoveAttempt getEasyMove() {
-            MoveAttempt m;
-            if (!forceJumps && (m = this.getRandomDoableMoveAttempt()) != null) {
-                return m;
-            } else {
-                return getRandomDoableMoveJump();
-            }
+            List<MoveAttempt> ms = this.getAllDoableMoveJumpAttempts();
+            Random r = new Random();
+            MoveAttempt m = ms[r.Next(0,ms.Count)];
+
+            return m;
+
+            //if (!forceJumps && (m = this.getRandomDoableMoveAttempt()) != null) {
+            //    return m;
+            //} else {
+            //    return getRandomDoableMoveJump();
+            //}
         }
         public MoveAttempt getHardMove() {
             return getRandomDoableMoveJump();
@@ -745,15 +751,27 @@ namespace FriendlyCheckers {
         }
         public List<MoveAttempt> getAllDoableMoveJumpAttempts()
         {
+            List<MoveAttempt> moves;
+            if (multiJumpLoc != null)
+            {
+                moves = new List<MoveAttempt>();
+                foreach (Vector v in getDoableJumps(board.getCellContents(multiJumpLoc)))
+                {
+                    moves.Add(new MoveAttempt(v, board.getCellContents(multiJumpLoc)));
+                }
+                return moves;
+            }
+
             PieceColor jumperColor = this.whoseMove();
             List<MoveAttempt> allMoves = new List<MoveAttempt>();
             List<MoveAttempt> jumps = getAllDoableJumpAttempts();
-            List<MoveAttempt> moves = getAllDoableMoveAttempts();
+            moves = getAllDoableMoveAttempts();
 
             foreach (MoveAttempt move in jumps)
                 allMoves.Add(move);
-            foreach (MoveAttempt move in moves)
-                allMoves.Add(move);
+            if((forceJumps && allMoves.Count == 0) || (!this.forceJumps))
+                foreach (MoveAttempt move in moves)
+                    allMoves.Add(move);
 
             System.Diagnostics.Debug.WriteLine("all doable moves jumps returning " + (allMoves.Count > 0 ? "true" : "false"));
             return allMoves;
@@ -822,7 +840,8 @@ namespace FriendlyCheckers {
             Move myMove = getMove(start, yEnd, xEnd, this.whoseMove());
 
             doMove(myMove);
-            successMoves.Add(new MoveAttempt(yStart, xStart, yEnd, xEnd)); 
+            successMoves.Add(new MoveAttempt(yStart, xStart, yEnd, xEnd));
+            movesMade.Add(myMove); 
 
             Piece add = myMove.getAdditions()[0];
             if (originalPieceType != add.getType()) {
@@ -845,7 +864,7 @@ namespace FriendlyCheckers {
         }
 
         private void doMove(Move move) {
-            movesMade.Add(move);
+            lastPlayer = move.getPlayer(); 
             foreach (Piece removal in move.getRemovals()) {
                 removePiece(removal);
             }
