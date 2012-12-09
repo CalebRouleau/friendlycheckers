@@ -30,7 +30,7 @@ namespace FriendlyCheckers
         private static GameLogic logic;
         private static BoardSpace[,] spaces;
 
-        private static Boolean wait_for_timer = false, wait_for_computer = false, used_make_move = false;
+        private static Boolean wait_for_timer = false, wait_for_computer = false, used_make_move = false, multi_jump = false;
         private static int row_W = 8;
         private static DispatcherTimer TURN_TIMER, COMPUTER_DELAY;
         public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, CREDS, SINGLE_PLAYER, LOCAL_MULTI };
@@ -221,6 +221,7 @@ namespace FriendlyCheckers
             ///// reset game vars
             wait_for_computer = false;
             wait_for_timer = false;
+            multi_jump = false;
             checkerX = checkerY = -1;
             resetBoard();
             /////
@@ -280,7 +281,13 @@ namespace FriendlyCheckers
                 handleHighlighting(checkerX, checkerY);
                 m = logic.makeMove(locY, locX, boardY, boardX);
                 handleMove(m);
-
+                if (whoseTurn.Equals(logic.whoseMove()))
+                {
+                    checkerX = boardX;
+                    checkerY = boardY;
+                    multi_jump = true;
+                }
+                
                 TURN_TIMER.Start();
                 wait_for_timer = true;
             }
@@ -289,7 +296,6 @@ namespace FriendlyCheckers
             catch (WrongMultiJumpPieceException) { MessageBox.Show("You must finish the multijump!"); }
             catch (InvalidMoveException) { }
             catch (GameLogicException) { }
-            checkerX = checkerY = -1;
         }
         private static bool canMove()
         {
@@ -352,15 +358,31 @@ namespace FriendlyCheckers
             PieceColor last = logic.getWhoMovedLast();
 
             // if there is a double jump available and it isn't forced
-            if (last.Equals(logic.whoseMove()))
+            if (multi_jump)
             {
                 // if black is making the jump
                 if (!last.Equals(PieceColor.RED) || (game_state != GameState.SINGLE_PLAYER))
                 {
                     if (used_make_move)
                         Make_Educated_Move(o, e);
-                    else if (!FORCE_JUMP && MessageBox.Show("Double Jump Available!", "Take the double jump?", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
-                        logic.skipMultiJump();
+                    else
+                    {
+                        if (!FORCE_JUMP)
+                        {
+                            if (MessageBox.Show("Double Jump Available!", "Take the double jump?", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+                            {
+                                logic.skipMultiJump();
+                                multi_jump = false;
+                            }
+                            else
+                            {
+                                int x = checkerX;
+                                int y = checkerY;
+                                checkerX = checkerY = -1;
+                                handleHighlighting(y, x);
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -369,7 +391,11 @@ namespace FriendlyCheckers
                 }
             }
             else
-                  used_make_move = false;
+            {
+                used_make_move = false;
+                checkerX = checkerY = -1;
+            }
+            multi_jump = false;
             WhoseTurn.Text = (logic.whoseMove().Equals(PieceColor.RED) ? "Red" : "Black") + " to move next.";
             Moves.Text = "Moves: "+logic.getMoveNumber();
             wait_for_timer = false;
@@ -428,7 +454,7 @@ namespace FriendlyCheckers
         }
         public static void handleHighlighting(int x, int y)
         {
-            if (wait_for_timer || wait_for_computer || game_state==GameState.END_GAME || !canMove()) return;
+            if ((wait_for_timer && !multi_jump) || wait_for_computer || game_state==GameState.END_GAME || !canMove()) return;
             if (!logic.isSelectable(y,x))return;
 
             Checker HIGHLIGHTED_PIECE = spaces[x, y].getChecker();
