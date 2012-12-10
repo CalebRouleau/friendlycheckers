@@ -291,11 +291,11 @@ namespace FriendlyCheckers
                 TURN_TIMER.Start();
                 wait_for_timer = true;
             }
-            catch (PieceWrongColorException) { }
+            //catch (PieceWrongColorException) { }
             catch (PlayerMustJumpException) { MessageBox.Show("You must take an available jump!"); }
-            catch (WrongMultiJumpPieceException) { MessageBox.Show("You must finish the multijump!"); }
-            catch (InvalidMoveException) { }
-            catch (GameLogicException) { }
+            catch (WrongMultiJumpPieceException) { MessageBox.Show("You must finish the multijump!"); } 
+            catch (InvalidMoveException) { System.Diagnostics.Debug.WriteLine("invalid move");  }
+            //catch (GameLogicException) { }
         }
         private static bool canMove()
         {
@@ -346,6 +346,13 @@ namespace FriendlyCheckers
                 TURN_TIMER.Start();
                 wait_for_timer = true;
             }
+
+            if (whoseMove.Equals(logic.whoseMove())) {
+                checkerX = a.getXEnd();
+                checkerY = a.getYEnd();
+                multi_jump = true;
+            }
+
         }
         private void timerTick(object o, EventArgs e)
         {
@@ -379,7 +386,7 @@ namespace FriendlyCheckers
                                 int x = checkerX;
                                 int y = checkerY;
                                 checkerX = checkerY = -1;
-                                handleHighlighting(y, x);
+                                handleHighlighting(x, y);
                             }
                         }
                     }

@@ -412,7 +412,9 @@ namespace FriendlyCheckers {
         }
 
         public bool isSelectable(int y, int x) {
-            Piece p = board.getCellContents(y, x); 
+            System.Diagnostics.Debug.WriteLine("y is " + y + " and x is " + x); 
+            Piece p = board.getCellContents(y, x);
+            System.Diagnostics.Debug.WriteLine("piece is "+p.ToString()); 
             return p.getColor() == this.whoseMove(); 
         }
 
