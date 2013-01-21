@@ -166,13 +166,16 @@ namespace FriendlyCheckers
         }
         private void SinglePlayer_Setup(object sender, RoutedEventArgs e)
         {
-            game_state = GameState.SINGLE_PLAYER;
+            (App.Current.RootVisual as PhoneApplicationFrame).Navigate(
+                                     new Uri("/GamePage.xaml", UriKind.Relative)); 
+            return;
+            /*game_state = GameState.SINGLE_PLAYER;
             TURN_TIMER.Interval = new TimeSpan(0, 0, 0, 0, 0); 
             ClearMenu();
             LayoutRoot.Children.Remove(TitlePanel);
             Versus.Text = "Player 1 vs. Computer";
             AddInGameStats();
-            resetBoard();
+            resetBoard();*/
         }
         private void Local_Multi_Setup(object sender, RoutedEventArgs e)
         {
