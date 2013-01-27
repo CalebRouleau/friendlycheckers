@@ -14,10 +14,17 @@
     SupportedOrientations="Portrait" Orientation="Portrait"
     shell:SystemTray.IsVisible="True">
     <Viewbox>
-        <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid x:Name="LayoutRootGame" Background="Transparent" Height="735" Width="506">
             <!--TitlePanel contains the name of the application and page title-->
-            <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
-                <TextBlock x:Name="PageTitle" Text="Checkers" Margin="-15,-25,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
+            <StackPanel Name="Bottom" Margin="0,586,0,-586">
+                <TextBlock x:Name="WhoseTurn" Text="Black to move next." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="47" Width="477" />
+                <Button Name="Make_A_Move"  Click="Make_Educated_Move" Height="70">Make Next Move</Button>
+                <Button Name="game_quit"  Click="Menu_Setup" Height="70">Quit to Menu</Button>
+            </StackPanel>
+            <StackPanel Name="Board" Margin="0,223,0,-223"></StackPanel>
+            <StackPanel Name="Top" Margin="-20,-37,20,678">
+                <TextBlock x:Name="Versus" Text="Player 1 vs. Player 2" FontSize="38" Style="{StaticResource PhoneTextNormalStyle}" Height="58" Width="466" />
+                <TextBlock x:Name="Moves" Text="Moves: 0" FontSize="22" Style="{StaticResource PhoneTextNormalStyle}" Height="36" Width="464" />
             </StackPanel>
         </Grid>
     </Viewbox>

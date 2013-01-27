@@ -1,0 +1,31 @@
+﻿<phone:PhoneApplicationPage 
+    x:Class="FriendlyCheckers.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
+    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="768"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    shell:SystemTray.IsVisible="True">
+    <Viewbox>
+        <Grid x:Name="LayoutRootAbout" Background="Transparent">
+            <StackPanel Name ="AboutPanel" Margin="-9,26,9,187">
+                <TextBlock x:Name="GameInfo" TextWrapping="Wrap" Text="FriendlyCheckers was created by:" FontSize="24" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="69" Width="446" />
+                <TextBlock x:Name="JoeName" Text="Joseph Klemen" FontSize="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="39" Width="450" />
+                <TextBlock x:Name="JoeInfo" TextWrapping="Wrap" Text="Menus, Images, and Visualization" FontSize ="20" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="71" Width="447" />
+                <TextBlock x:Name="CalebName" Text="Caleb Rouleau" FontSize="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="46" Width="446" />
+                <TextBlock x:Name="CalebInfo" TextWrapping="Wrap" Text="Game Logic, Game Play and AI" FontSize ="20" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="84" Width="444" />
+                <TextBlock x:Name="VipInfo" TextWrapping="Wrap" Text="With great contribution from" FontSize="24" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" Width="446" />
+                <TextBlock x:Name="VipName" Text="Vipul Nataraj" FontSize ="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="83" Width="443" />
+                <TextBlock x:Name="AndrewName" Text="Andrew Cutler" FontSize ="30" Margin="9,-50,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="36" Width="440" />
+            </StackPanel>
+            <TextBlock x:Name="PageTitleAbout" Text="About" Margin="-3,-69,0,569" Style="{StaticResource PhoneTextTitle1Style}" />
+        </Grid>
+    </Viewbox>
+</phone:PhoneApplicationPage>

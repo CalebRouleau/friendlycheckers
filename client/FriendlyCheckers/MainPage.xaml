@@ -25,42 +25,15 @@
             <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
                 <TextBlock x:Name="PageTitle" Text="Checkers" Margin="-15,-25,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
             </StackPanel>
-            <Grid Name="HiddenPanel">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="393*" />
-                    <ColumnDefinition Width="87*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="Versus" Text="Player 1 vs. Player 2" FontSize ="38" Style="{StaticResource PhoneTextNormalStyle}" Height="58" Width="466" Margin="12,-14,2,117" Grid.ColumnSpan="2" />
-                <TextBlock x:Name="Moves" Text="Moves: 0" FontSize ="22" Style="{StaticResource PhoneTextNormalStyle}" Height="33" Margin="0,36,275,92" HorizontalAlignment="Right" Width="191" Grid.ColumnSpan="2" />
-            </Grid>
+            
             <!--ContentPanel - place additional content here-->
             <Grid x:Name="ContentPanel" Margin="0,109,2,0" Grid.RowSpan="2">
-                <TextBlock x:Name="WhoseTurn" Text="Black to move next." FontSize="32" Style="{StaticResource PhoneTextNormalStyle}" Height="56" Margin="0,436,150,97" HorizontalAlignment="Right" Width="325" />
-                <Button Name="quit"  Click="Menu_Setup" Margin="-12,556,-12,6" Height="70">Quit to Menu</Button>
                 <Image Name ="TitleBoard" Source="screencap.png" Margin="0,-220,0,0"></Image>
-                <Button Name="Make_A_Move"  Click="Make_Educated_Move" Margin="-12,446,-12,6" Height="70">Make Next Move</Button>
                 <Button Name="singleplayer"  Click="SinglePlayer_Setup" Margin="-12,460,111,98" Height="90">Singleplayer</Button>
                 <Button Name="multiplayer_local" Click="Local_Multi_Setup" Margin="-12,551,111,19" Height="90">Multiplayer Local</Button>
                 <Button Name="options"  Click="Show_Options" Margin="359,466,0,103" Width="120" FontSize ="40" Height="90">+</Button>
                 <Button Name="about"  Click="Show_About" Margin="359,551,0,18" Width="120" FontSize ="26" Height="90">?</Button>
             </Grid>
-            <StackPanel Name ="OptionsPanel" Margin="0,139,0,74" Grid.RowSpan="2">
-                <TextBlock x:Name="GameOptions" Text="Gameplay:" FontSize="28" Margin ="-10,-30,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
-                <CheckBox Name="Op_ForceJump" Checked="CheckBox_Checked"  Unchecked="CheckBox_Checked" Margin="10,-15,-10,0">Force jumps</CheckBox>
-                <TextBlock x:Name="Difficulty" Text="Computer player difficulty:" FontSize="28" Margin ="-10,20,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
-                <CheckBox Name="Op_DiffHard" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="482" Margin="10,-5,-10,0">Expert</CheckBox>
-                <CheckBox Name="Op_DiffEasy" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="486" Margin="10,-15,-10,0">Novice</CheckBox>
-            </StackPanel>
-            <StackPanel Name ="AboutPanel" Margin="0,139,0,74" Grid.RowSpan="2">
-                <TextBlock x:Name="GameInfo" TextWrapping="Wrap" Text="FriendlyCheckers was created by:" FontSize="24" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="69" Width="446" />
-                <TextBlock x:Name="JoeName" Text="Joseph Klemen" FontSize="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="39" Width="450" />
-                <TextBlock x:Name="JoeInfo" TextWrapping="Wrap" Text="Menus, Images, and Visualization" FontSize ="20" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="71" Width="447" />
-                <TextBlock x:Name="CalebName" Text="Caleb Rouleau" FontSize="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="46" Width="446" />
-                <TextBlock x:Name="CalebInfo" TextWrapping="Wrap" Text="Game Logic, Game Play and AI" FontSize ="20" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="84" Width="444" />
-                <TextBlock x:Name="VipInfo" TextWrapping="Wrap" Text="With special thanks to" FontSize="24" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" Width="446" />
-                <TextBlock x:Name="VipName" Text="Vipul Nataraj" FontSize ="30" Margin="9,-7,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="83" Width="443" />
-                <TextBlock x:Name="AndrewName" Text="Andrew Cutler" FontSize ="30" Margin="9,-50,0,0" Style="{StaticResource PhoneTextNormalStyle}" Height="36" Width="440" />
-            </StackPanel>
         </Grid>
     </Viewbox>
 </phone:PhoneApplicationPage>

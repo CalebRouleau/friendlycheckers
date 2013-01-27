@@ -1,0 +1,30 @@
+﻿<phone:PhoneApplicationPage 
+    x:Class="FriendlyCheckers.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
+    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="768"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    shell:SystemTray.IsVisible="True">
+    <Viewbox>
+        <Grid x:Name="LayoutRootSettings" Background="Transparent">
+            <!--TitlePanel contains the name of the application and page title-->
+            <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28"></StackPanel>
+            <StackPanel Name ="OptionsPanel" Margin="-12,-26,12,239">
+                <TextBlock x:Name="GameOptions" Text="Gameplay:" FontSize="28" Margin ="-10,-30,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
+                <CheckBox Name="Op_ForceJump" Checked="CheckBox_Checked"  Unchecked="CheckBox_Checked" Margin="10,-15,-10,0">Force jumps</CheckBox>
+                <TextBlock x:Name="Difficulty" Text="Computer player difficulty:" FontSize="28" Margin ="-10,20,10,0" Style="{StaticResource PhoneTextNormalStyle}" Height="40" HorizontalAlignment="Right" Width="454" />
+                <CheckBox Name="Op_DiffHard" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="482" Margin="10,-5,-10,0">Expert</CheckBox>
+                <CheckBox Name="Op_DiffEasy" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Height="69" Width="486" Margin="10,-15,-10,0">Novice</CheckBox>
+            </StackPanel>
+            <TextBlock x:Name="PageTitleSettings" Text="Settings" Margin="-3,-160,0,522" Style="{StaticResource PhoneTextTitle1Style}" />
+        </Grid>
+    </Viewbox>
+</phone:PhoneApplicationPage>
