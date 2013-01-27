@@ -392,6 +392,11 @@ namespace FriendlyCheckers
             }
             else
             {
+                TURN_TIMER.Stop();
+                COMPUTER_DELAY.Stop();
+                wait_for_computer = false;
+                wait_for_timer = false;
+                player_turn = true;
                 NavigationService.GoBack();
                 MainPage.game_state = GameState.MENU;
             }
