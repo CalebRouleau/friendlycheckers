@@ -26,9 +26,10 @@ namespace FriendlyCheckers
         private static GameLogic logic;
         private static BoardSpace[,] spaces;
 
-        private static Boolean wait_for_timer = false, wait_for_computer = false, used_make_move = false, multi_jump = false;
+        private static Boolean wait_for_timer = false, player_turn = true, wait_for_computer = false, used_make_move = false, multi_jump = false;
         private static int row_W = 8;
         private static DispatcherTimer TURN_TIMER, COMPUTER_DELAY;
+        private static GameState game_type;
 
         public GamePage()
         {
@@ -37,7 +38,15 @@ namespace FriendlyCheckers
             checkerX = checkerY = -1;
 
             if (MainPage.game_state == GameState.SINGLE_PLAYER)
+            {
                 Versus.Text = "Player 1 vs. Computer";
+                game_type = GameState.SINGLE_PLAYER;
+            }
+            else
+            {
+                game_type = GameState.LOCAL_MULTI;
+                Bottom.Children.Remove(Make_A_Move);
+            }
 
             COMPUTER_DELAY = new DispatcherTimer();
             COMPUTER_DELAY.Tick += Computer_Delay_Tick;
@@ -151,8 +160,11 @@ namespace FriendlyCheckers
         //////////
         public static void MakeMove(int boardX, int boardY)
         {
-            if (wait_for_timer || wait_for_computer || !canMove()) return;
+            if (wait_for_timer || !player_turn || wait_for_computer || !canMove()) return;
             if (MainPage.game_state == GameState.OUT_OF_GAME || MainPage.game_state == GameState.END_GAME || (checkerX == -1 && checkerY == -1)) return;
+
+            if (game_type == GameState.SINGLE_PLAYER) player_turn = false;
+            wait_for_timer = true;
             Move m;
             try
             {
@@ -162,6 +174,7 @@ namespace FriendlyCheckers
                 // Unhighlight the selected piece
                 handleHighlighting(checkerX, checkerY);
                 m = logic.makeMove(locY, locX, boardY, boardX);
+              
                 handleMove(m);
                 if (whoseTurn.Equals(logic.whoseMove()))
                 {
@@ -171,13 +184,25 @@ namespace FriendlyCheckers
                 }
 
                 TURN_TIMER.Start();
-                wait_for_timer = true;
             }
-            //catch (PieceWrongColorException) { }
-            catch (PlayerMustJumpException) { MessageBox.Show("You must take an available jump!"); }
-            catch (WrongMultiJumpPieceException) { MessageBox.Show("You must finish the multijump!"); }
-            catch (InvalidMoveException) { System.Diagnostics.Debug.WriteLine("invalid move"); }
-            //catch (GameLogicException) { }
+            catch (PlayerMustJumpException)
+            {
+                MessageBox.Show("You must take an available jump!");
+                wait_for_timer = false;
+                player_turn = true;
+            }
+            catch (WrongMultiJumpPieceException)
+            {
+                MessageBox.Show("You must finish the multijump!");
+                wait_for_timer = false;
+                player_turn = true;
+            }
+            catch (InvalidMoveException)
+            {
+                System.Diagnostics.Debug.WriteLine("invalid move");
+                wait_for_timer = false;
+                player_turn = true;
+            }
         }
         private static bool canMove()
         {
@@ -212,8 +237,11 @@ namespace FriendlyCheckers
         }
         private void Make_Educated_Move(object sender, EventArgs e)
         {
-            if (!canMove() || (wait_for_computer && sender.Equals(Make_A_Move))) return;
+            if (!canMove() || !player_turn || (wait_for_computer && sender.Equals(Make_A_Move))) return;
             if(sender.Equals(Make_A_Move))used_make_move = true;
+
+            if (game_type == GameState.SINGLE_PLAYER) player_turn = false;
+            wait_for_timer = true;
             PieceColor whoseMove = logic.whoseMove();
             MoveAttempt a;
             if (MainPage.DIFFICULT && wait_for_computer)
@@ -224,10 +252,7 @@ namespace FriendlyCheckers
             Move m = logic.makeMove(a);
             handleMove(m);
             if (!TURN_TIMER.IsEnabled)
-            {
                 TURN_TIMER.Start();
-                wait_for_timer = true;
-            }
 
             if (whoseMove.Equals(logic.whoseMove()))
             {
@@ -235,7 +260,6 @@ namespace FriendlyCheckers
                 checkerY = a.getYEnd();
                 multi_jump = true;
             }
-
         }
         private void timerTick(object o, EventArgs e)
         {
@@ -289,6 +313,7 @@ namespace FriendlyCheckers
             WhoseTurn.Text = (logic.whoseMove().Equals(PieceColor.RED) ? "Red" : "Black") + " to move next.";
             Moves.Text = "Moves: "+logic.getMoveNumber();
             wait_for_timer = false;
+            player_turn = true;
             if (MainPage.game_state == GameState.SINGLE_PLAYER)
             {
                 //MessageBox.Show("Computer's turn.");
@@ -360,9 +385,16 @@ namespace FriendlyCheckers
         }
         protected override void OnBackKeyPress(System.ComponentModel.CancelEventArgs e)
         {
-            if (canMove() && MessageBox.Show("The current game will end.", "Exit to main menu?", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel) return;
-            NavigationService.GoBack();
-            MainPage.game_state = GameState.MENU;
+            if (canMove() && MessageBox.Show("The current game will end.", "Exit to main menu?", MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+            {
+                if(e!=null)e.Cancel = true;
+                return;
+            }
+            else
+            {
+                NavigationService.GoBack();
+                MainPage.game_state = GameState.MENU;
+            }
         }
 
     }

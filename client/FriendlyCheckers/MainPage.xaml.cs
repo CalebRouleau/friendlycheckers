@@ -5,7 +5,7 @@ using Microsoft.Phone.Controls;
 
 namespace FriendlyCheckers
 {
-    public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, MENU, SINGLE_PLAYER, LOCAL_MULTI };
+    public enum GameState { OUT_OF_GAME, END_GAME, OPTIONS, ABOUT, MENU, SINGLE_PLAYER, LOCAL_MULTI, WAITING_FOR_COMPUTER };
     public partial class MainPage : PhoneApplicationPage
     {
 
